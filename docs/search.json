@@ -1,0 +1,107 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Víctor Muñoz",
+    "section": "",
+    "text": "Hola, soy Víctor Muñoz Barrasa\nEsta web sirve para presentar mi trabajo individual para la asignatura “Programación y manejo de datos en la era Del Big Data”, optativa de GECO en la Facultad de Economía de la Universitat de València.\nLa web de la asignatura está aquí y los trabajos de mis compañeros de curso puedes verlos aquí.\nEl trabajo lleva por título: “La Liga BBVA temporada 2014/15”. El objetivo es analizar la lioga española en los años 2014 y 2015.\nEl trabajo puede verse aquí."
+  },
+  {
+    "objectID": "my_trabajo_BigData.html",
+    "href": "my_trabajo_BigData.html",
+    "title": "La Liga BBVA 2014/15",
+    "section": "",
+    "text": "Logo"
+  },
+  {
+    "objectID": "my_trabajo_BigData.html#datos-del-trabajo",
+    "href": "my_trabajo_BigData.html#datos-del-trabajo",
+    "title": "La Liga BBVA 2014/15",
+    "section": "Datos del trabajo",
+    "text": "Datos del trabajo\n\n\nFuentes de los Datos\nCódigos\n\n\n\nLos datos fueron obtenidos de diferentes fuentes: este repo de Github aquí, Wikipedia y ceroacero.es.\n\n\n\nCódigo#ESTOS SON LOS PAQUETES QUE HE UTILIZADO A LO LARGO DEL TRABAJO\n\nlibrary(tidyverse)\nlibrary(dplyr)\nlibrary(ggplot2)\nlibrary(rio)\nlibrary(kableExtra)\nlibrary(wordcloud2)\nlibrary(plotly)\nlibrary(DT)\nlibrary(gganimate)\nlibrary(vembedr)\n\n# PRIMERO CARGO LOS DATOS QUE POSTERIORMENTE TRANSFORMARE PARA PODER ANALIZARLOS MEJOR\n\nClasif <- rio::import(here::here(\"datos\", \"clasificacion_total.csv\"))\n\nPuntospjornada <- rio::import(here::here(\"datos\", \"Puntospjornada.xlsx\"))\n\nGoleadores <- rio::import(here::here(\"datos\", \"Maximos_goleadores.xlsx\"))\n\nAsistencias <- rio::import(here::here(\"datos\", \"Asistencias.xlsx\"))\n\nMSNBBCgoles <- rio::import(here::here(\"datos\", \"MSNBBC_goles.xlsx\"))\n\n\n#AHORA LOS TRANSFORMO\nClasif <- Clasif %>% filter(Season %in% \"2014-15\")\n\nClasif <- Clasif %>% select(Position, `Crest names`, Points, Matches, Won, Draw, Lost, Scored, Conceded, GoalDifference) %>% rename(Teams = `Crest names`)\n\nClasif[c(3, 9, 19, 20), 2] <- c(\"Atletico de Madrid\", \"Malaga CF\", \"UD Almeria\", \"Cordoba CF\")\n\nClasif <- Clasif %>% mutate(Clasif2016 = case_when(Position == \"1\" ~ \"Fase de grupos de la Liga de Campeones\", Position == \"2\" ~ \"Fase de grupos de la Liga de Campeones\", Position == \"3\" ~ \"Fase de grupos de la Liga de Campeones\", Position == \"5\" ~ \"Fase de grupos de la Liga de Campeones\" , Position ==  \"4\" ~ \"Play-offs de la Liga de Campeones\",  Position == \"6\" ~ \"Fase de grupos de la Liga Europa\", Position == \"7\" ~ \"  Tercera ronda previa de la Liga Europa\", Position == \"13\" ~ \"Descenso de categoria\", Position == \"19\" ~ \"Descenso de categoria\", Position == \"20\" ~ \"Descenso de categoria\", TRUE ~ \"NA\"))\n\nGoles <- Clasif %>% select(Teams, Scored) %>% filter(Scored >= 48) %>% slice_max(Scored, n = 6)\n\nRelacion <- Clasif %>% select(Teams, Scored, Won) %>% slice_max(Scored, n = 20)\n\nPuntospjornada <- rio::import(here::here(\"datos\", \"Puntospjornada.xlsx\"))\n\nPuntospjornada <- Puntospjornada %>% tidyr::pivot_longer(cols = 2:39, names_to = \"Jornada\")\n\nPuntospjornada <- Puntospjornada %>% rename(Puntos = value)\n\nPuntospjornada$Jornada <- as.numeric(Puntospjornada$Jornada)\n\nPuntospjornada <- Puntospjornada %>%\n  group_by(Jornada) %>%\n  arrange(Jornada, desc(Puntos)) %>%\n  mutate(ranking = row_number()) %>%\n  filter(ranking <=15)\n\nGoleadores <- Goleadores %>% select(Jugador, Equipo, Goles, PJ, Media, Min., `Min./Gol`) %>% slice(c(0:17)) \n\nAsistencias <- Asistencias %>% select(Jugador, Asist.) %>% slice(0:20)\n\nComparacion <- full_join(Goleadores, Asistencias) %>% filter(Jugador %in% c(\"Cristiano Ronaldo\", \"Lionel Messi\", \"Neymar\", \"Luis Suárez\", \"Karim Benzema\", \"Gareth Bale\"))\n\nComparaciong <- Comparacion %>% select(Jugador, Equipo, Goles)\n\nComparaciong <- Comparaciong %>% mutate(Equipo = ifelse(Equipo == \"Fútbol Club Barcelona\", \"MSN\", Equipo)) %>% mutate(Equipo = ifelse(Equipo == \"Real Madrid Club de Fútbol\", \"BBC\", Equipo))\n\nMSNBBCgoles <- MSNBBCgoles %>% rename(Equipo = `Etiquetas de fila`, Goles = `Suma de Goles`)\n\nComparaciona <- Comparacion %>% select(Jugador, Equipo, Asist.)\n\nComparaciona$Asist. <- as.numeric(Comparaciona$Asist.)\n\nComparaciona <- Comparaciona %>% arrange(desc(Asist.))\n\nMSNBBCasistencias <- rio::import(here::here(\"datos\", \"MSNBBC_asistencias.xlsx\"))"
+  },
+  {
+    "objectID": "my_trabajo_BigData.html#tabla-de-la-liga-bbva-de-la-temporada-201415",
+    "href": "my_trabajo_BigData.html#tabla-de-la-liga-bbva-de-la-temporada-201415",
+    "title": "La Liga BBVA 2014/15",
+    "section": "2. Tabla de la Liga BBVA de la temporada 2014/15",
+    "text": "2. Tabla de la Liga BBVA de la temporada 2014/15\nLa temporada 2014/2015 fue un año impresionante en todos los sentidos. Dejo varios aspectos relevantes: lograr el FC Barcelona conseguir el titulo de campeon tras una dura batalla con el Real Madrid. El FC Barcelona conquistó su 23.er título de liga (su 5.º en las 7 últimas ediciones) y se quedó a 3 goles de igualar el récord de menos goles encajados en la Liga, que consiguió el Deportivo de La Coruña en la temporada 1993-1994, con 18 goles encajados. Junto a su quinta Champions, el Barcelona ganó su quinto doblete Liga-Champions, eso si se incluye el doblete Liga-Champions en 2009 en su triplete del 2009.\n\nCódigokable(Clasif) %>%\n  kableExtra::kable_styling(fixed_thead = list(enabled = T, background = \"black\")) %>% row_spec(row = 0, color = \"white\") %>% column_spec(3, bold = T, color = \"black\", background = \"chartreuse\") \n\n\n\n\n Position \n    Teams \n    Points \n    Matches \n    Won \n    Draw \n    Lost \n    Scored \n    Conceded \n    GoalDifference \n    Clasif2016 \n  \n\n\n 1 \n    FC Barcelona \n    94 \n    38 \n    30 \n    4 \n    4 \n    110 \n    21 \n    89 \n    Fase de grupos de la Liga de Campeones \n  \n\n 2 \n    Real Madrid \n    92 \n    38 \n    30 \n    2 \n    6 \n    118 \n    38 \n    80 \n    Fase de grupos de la Liga de Campeones \n  \n\n 3 \n    Atletico de Madrid \n    78 \n    38 \n    23 \n    9 \n    6 \n    67 \n    29 \n    38 \n    Fase de grupos de la Liga de Campeones \n  \n\n 4 \n    Valencia CF \n    77 \n    38 \n    22 \n    11 \n    5 \n    70 \n    32 \n    38 \n    Play-offs de la Liga de Campeones \n  \n\n 5 \n    Sevilla FC \n    76 \n    38 \n    23 \n    7 \n    8 \n    71 \n    45 \n    26 \n    Fase de grupos de la Liga de Campeones \n  \n\n 6 \n    Villarreal CF \n    60 \n    38 \n    16 \n    12 \n    10 \n    48 \n    37 \n    11 \n    Fase de grupos de la Liga Europa \n  \n\n 7 \n    Athletic Club \n    55 \n    38 \n    15 \n    10 \n    13 \n    42 \n    41 \n    1 \n    Tercera ronda previa de la Liga Europa \n  \n\n 8 \n    RC Celta \n    51 \n    38 \n    13 \n    12 \n    13 \n    47 \n    44 \n    3 \n    NA \n  \n\n 9 \n    Malaga CF \n    50 \n    38 \n    14 \n    8 \n    16 \n    42 \n    48 \n    -6 \n    NA \n  \n\n 10 \n    RCD Espanyol \n    49 \n    38 \n    13 \n    10 \n    15 \n    47 \n    51 \n    -4 \n    NA \n  \n\n 11 \n    Rayo Vallecano \n    49 \n    38 \n    15 \n    4 \n    19 \n    46 \n    68 \n    -22 \n    NA \n  \n\n 12 \n    Real Sociedad \n    46 \n    38 \n    11 \n    13 \n    14 \n    44 \n    51 \n    -7 \n    NA \n  \n\n 13 \n    Elche CF \n    41 \n    38 \n    11 \n    8 \n    19 \n    35 \n    62 \n    -27 \n    Descenso de categoria \n  \n\n 14 \n    Levante UD \n    37 \n    38 \n    9 \n    10 \n    19 \n    34 \n    67 \n    -33 \n    NA \n  \n\n 15 \n    Getafe CF \n    37 \n    38 \n    10 \n    7 \n    21 \n    33 \n    64 \n    -31 \n    NA \n  \n\n 16 \n    RC Deportivo \n    35 \n    38 \n    7 \n    14 \n    17 \n    35 \n    60 \n    -25 \n    NA \n  \n\n 17 \n    Granada CF \n    35 \n    38 \n    7 \n    14 \n    17 \n    29 \n    64 \n    -35 \n    NA \n  \n\n 18 \n    SD Eibar \n    35 \n    38 \n    9 \n    8 \n    21 \n    34 \n    55 \n    -21 \n    NA \n  \n\n 19 \n    UD Almeria \n    32 \n    38 \n    8 \n    8 \n    22 \n    35 \n    64 \n    -29 \n    Descenso de categoria \n  \n\n 20 \n    Cordoba CF \n    20 \n    38 \n    3 \n    11 \n    24 \n    22 \n    68 \n    -46 \n    Descenso de categoria \n  \n\n\n\n\n\n\n\nMSN"
+  },
+  {
+    "objectID": "my_trabajo_BigData.html#evolución-de-la-clasificación-por-jornada",
+    "href": "my_trabajo_BigData.html#evolución-de-la-clasificación-por-jornada",
+    "title": "La Liga BBVA 2014/15",
+    "section": "Evolución de la clasificación por jornada",
+    "text": "Evolución de la clasificación por jornada\n\nCódigoanimacion <- Puntospjornada %>%\n  ggplot() +\n  geom_col(aes(ranking, Puntos, fill = Equipos)) +\n  geom_text(aes(ranking, Puntos, label = Puntos), hjust=-0.1) +\n  geom_text(aes(ranking, y=0 , label = Equipos), hjust=1.1) + \n  geom_text(aes(x=15, y=max(Puntos) , label = as.factor(Jornada)), vjust = 0.2, alpha = 0.5,  col = \"gray\", size = 20) +\n  coord_flip(clip = \"off\", expand = FALSE) + scale_x_reverse() +\n  theme_minimal() + theme(\n    panel.grid = element_blank(), \n    legend.position = \"none\",\n    axis.ticks.y = element_blank(),\n    axis.title.y = element_blank(),\n    axis.text.y = element_blank(),\n    plot.margin = margin(1, 4, 1, 3, \"cm\")\n  ) +\n  transition_states(Jornada, state_length = 0, transition_length = 2) +\n  enter_fade() +\n  exit_fade() + \n  ease_aes('quadratic-in-out') \n\nanimate(animacion, width = 700, height = 432, fps = 25, duration = 15, rewind = FALSE)"
+  },
+  {
+    "objectID": "my_trabajo_BigData.html#analisis-goles-anotados",
+    "href": "my_trabajo_BigData.html#analisis-goles-anotados",
+    "title": "La Liga BBVA 2014/15",
+    "section": "3. Analisis Goles Anotados",
+    "text": "3. Analisis Goles Anotados"
+  },
+  {
+    "objectID": "my_trabajo_BigData.html#equipos-con-mas-goles",
+    "href": "my_trabajo_BigData.html#equipos-con-mas-goles",
+    "title": "La Liga BBVA 2014/15",
+    "section": "Equipos con mas goles",
+    "text": "Equipos con mas goles\nEn el grafrico 2 podemos observar el numero de goles anotados por los 6 equipos que mas metieron en esta edicion. En cuanto al grafico 3, enseña la relacion entre goles y partidos ganados por los diferentes equipos y se puede ver que existe una relacion positiva.\n\n\nGráfico 2\nGráfico 3\n\n\n\n\nCódigop1 <- ggplot(Goles, aes(x = reorder(Teams, +Scored), y = Scored)) + \n  geom_col(fill = c(\"brown2\", \"brown2\", \"brown2\", \n                    \"brown2\", \"brown2\", \"brown2\")) \n\np1 + labs(title = \"Goles anotados por equipo\", subtitle = \"(Top 6 equipos con mas goles)\",\n         x = \"Equipos\",\n         y = \"Goles totales\") + theme_light() + \n  geom_text(aes(label = Scored),nudge_y = 5, colour = \"black\") + coord_flip()\n\n\n\n\n\n\n\n\n\n\nCódigop2 <- ggplot(Relacion, aes(Scored, Won, color = Teams)) + geom_point() + geom_smooth()\n        ggplotly(p2)"
+  },
+  {
+    "objectID": "my_trabajo_BigData.html#máximos-goleadores",
+    "href": "my_trabajo_BigData.html#máximos-goleadores",
+    "title": "La Liga BBVA 2014/15",
+    "section": "Máximos Goleadores",
+    "text": "Máximos Goleadores\nEn esta tabla podemos observar a los maximos anotadores y las estadisticas de cada jugador respecto a los partidos y minutos jugados en todos los partidos de la temporada. En el, como maximo goleador aparece el jugador portugues Cristiano Ronaldo (Real Madrid) con 48 dianas, seguido de un Lionel Messi (FC barcelona) con 43 goles y terminando el podio el jugador brasileño Neymar Jr (FC Barcelona) con 22.\n\nCódigodatatable(Goleadores, rownames = FALSE, filter = \"top\") %>% formatStyle(columns = 3, backgroundColor = \"lightgreen\")\n\n\n\n\n\n\n\nCódigoembed_url(\"https://www.youtube.com/watch?v=Q8ucqILcYzY\")"
+  },
+  {
+    "objectID": "my_trabajo_BigData.html#analisis-asistencias",
+    "href": "my_trabajo_BigData.html#analisis-asistencias",
+    "title": "La Liga BBVA 2014/15",
+    "section": "4. Analisis Asistencias",
+    "text": "4. Analisis Asistencias\nEl maximo asistidor es el futbolista argentino Lionel Messi con unas 18 asistencias seguido de Cristiano y Luis Suarez. El astroargentino considerado el mejor jugador de la epoca ha sido el maximo asistente y el segundo maximo golkeador.\n\nCódigodatatable(Asistencias, rownames = FALSE, filter = \"top\") %>% formatStyle(columns = 3, backgroundColor = \"lightgreen\")"
+  },
+  {
+    "objectID": "my_trabajo_BigData.html#analisis-msn-vs-bbc",
+    "href": "my_trabajo_BigData.html#analisis-msn-vs-bbc",
+    "title": "La Liga BBVA 2014/15",
+    "section": "5. Analisis MSN vs BBC",
+    "text": "5. Analisis MSN vs BBC\nA continuacion, se realizara un estudio de comparacion entre los dos grandes tridentes de esta liga, centrandonos en los goles y asistencias, tanto individualmente como cinjuntamente."
+  },
+  {
+    "objectID": "my_trabajo_BigData.html#goles",
+    "href": "my_trabajo_BigData.html#goles",
+    "title": "La Liga BBVA 2014/15",
+    "section": "Goles",
+    "text": "Goles\n\n\nGráfico 4\nGráfico 5\n\n\n\n\nCódigop3 <- ggplot(MSNBBCgoles) +\n  aes(x = reorder(Equipo, desc(Goles)), y = Goles) +\n  geom_col(fill = \"#092400\") +\n  labs(x = \"Equipo\", \n       y = \"Goles\", title = \"MSN vs BBC\", subtitle = \"Comparacion Goles\") +\n  theme_minimal() +\n  theme(plot.title = element_text(size = 20L, hjust = 0.5), plot.subtitle = element_text(size = 13L, \n                                                                                         hjust = 0.5))+\n  geom_text(aes(label=Goles), vjust=1.5,hjust=0.49, color=\"white\",    \n            position = position_dodge(0.1),  size=8\n  )\np3\n\n\n\n\n\n\n\n\n\n\nCódigop4 <- ggplot(Comparacion) +\n  aes(x = reorder(Jugador, desc(Goles)), y = Goles) +\n  geom_col(fill = \"#420057\") +\n  labs(x = \"Jugador\", \n       y = \"Goles\", title = \"MSN vs BBC\", subtitle = \"Comparacion Goles\") +\n  theme_minimal() +\n  theme(plot.title = element_text(size = 20L, hjust = 0.5), plot.subtitle = element_text(size = 13L, \n                                                                                         hjust = 0.5))+\n  geom_text(aes(label=Goles), vjust=1.5,hjust=0.49, color=\"white\",    \n            position = position_dodge(0.1),  size=8\n  )\np4"
+  },
+  {
+    "objectID": "my_trabajo_BigData.html#asistencias",
+    "href": "my_trabajo_BigData.html#asistencias",
+    "title": "La Liga BBVA 2014/15",
+    "section": "Asistencias",
+    "text": "Asistencias\n\n\nGráfico 6\nGráfico 7\n\n\n\n\nCódigop5 <- ggplot(MSNBBCasistencias) +\n  aes(x = reorder(Equipo, desc(Asistencias)), y = Asistencias) +\n  geom_col(fill = \"#092400\") +\n  labs(x = \"Equipo\", \n       y = \"Asistencias\", title = \"MSN vs BBC\", subtitle = \"Comparacion Asistencias\") +\n  theme_minimal() +\n  theme(plot.title = element_text(size = 20L, hjust = 0.5), plot.subtitle = element_text(size = 13L, \n                                                                                         hjust = 0.5))+\n  geom_text(aes(label=Asistencias), vjust=1.5,hjust=0.49, color=\"white\",    \n            position = position_dodge(0.1),  size=8\n  )\np5\n\n\n\n\n\n\n\n\n\n\nCódigop6 <- ggplot(Comparaciona) +\n  aes(x = reorder(Jugador, desc(Asist.)), y = Asist.) +\n  geom_col(fill = \"#420057\") +\n  labs(x = \"Jugador\", \n       y = \"Asistencias\", title = \"MSN vs BBC\", subtitle = \"Comparacion Asistencias\") +\n  theme_minimal() +\n  theme(plot.title = element_text(size = 20L, hjust = 0.5), plot.subtitle = element_text(size = 13L, \n                                                                                         hjust = 0.5))+\n  geom_text(aes(label=Asist.), vjust=1.5,hjust=0.49, color=\"white\",    \n            position = position_dodge(0.1),  size=8\n  )\np6"
+  },
+  {
+    "objectID": "my_trabajo_BigData.html#conclusiones",
+    "href": "my_trabajo_BigData.html#conclusiones",
+    "title": "La Liga BBVA 2014/15",
+    "section": "Conclusiones",
+    "text": "Conclusiones\nFinalmente, se puede confirmar que esta liga española ha sido una de las mas grandes de la historia, y dificilmente ninguna otra va poder acercarse a tal nivel."
+  },
+  {
+    "objectID": "my_trabajo_BigData.html#referencias",
+    "href": "my_trabajo_BigData.html#referencias",
+    "title": "La Liga BBVA 2014/15",
+    "section": "Referencias",
+    "text": "Referencias\n\nWikipedia\nCero a cero"
+  },
+  {
+    "objectID": "my_trabajo_BigData.html#introducción",
+    "href": "my_trabajo_BigData.html#introducción",
+    "title": "La Liga BBVA 2014/15",
+    "section": "1. Introducción",
+    "text": "1. Introducción\nEste trabajo se realiza con el fin de analizar las estadisticas de los equipos y jugadores de la primera division de la liga de Española en la temporada 2014/15. Considerada una de las 5 grandes ligas europeas que para muchos, sus 38 jornadas, la convierten en la mas competitiva y relevante del mundo, tambien gracias a su historia y a la participacion de tantos grandes clubes como Real Madrid, Barcelona, Valencia entre otros. Ilutraremos la tabla de clasificacion de cada equipo, el Campeon de la liga, los descensos a la segunda division y los equipos que alcanzaron las maximas competiciones europeas (Champions League y Europa League). Ademas estudiaremos los maximos goleadores de la temporada tanto por equipos como jugadores mediante la utilizacion de graficos ilustrativos. Por ultimo, realizaremos una comparacion entre los dos grandes tridentes del Real Madrid y Barcelona (MSN y BBC)."
+  }
+]
